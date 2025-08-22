@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>우리 반 칭찬 보상 프로그램</title>
+<style>
+  :root{
+    --bg:#f8fbff;
+    --primary:#3b82f6;
+    --secondary:#22c55e;
+    --accent:#f59e0b;
+    --danger:#ef4444;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --gem:#06b6d4;
+    --purple:#8b5cf6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Pretendard', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;font-size:18px}
+  h1,h2,h3{margin:0 0 .5rem 0}
+  .app {max-width:1200px;margin:0 auto;padding:16px;}
+  /* Header */
+  .header{
+    background:linear-gradient(135deg, #93c5fd 0%, #60a5fa 60%, #34d399 100%);
+    border-radius:16px;color:#fff;padding:20px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand .logo{font-size:42px}
+  .brand .title{font-size:28px;font-weight:800;line-height:1.1}
+  .class-stats{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .stat-card{
+    background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);
+    padding:12px 16px;border-radius:14px;min-width:230px;display:flex;gap:12px;align-items:center
+  }
+  .stat-icon{font-size:38px}
+  .stat-body{line-height:1.1}
+  .stat-value{font-size:30px;font-weight:900}
+  .stat-sub{font-size:14px;opacity:.95}
+  .gem-progress{
+    width:240px;background:rgba(255,255,255,.25);height:16px;border-radius:9999px;overflow:hidden;border:1px solid rgba(255,255,255,.45)
+  }
+  .gem-progress > div{
+    height:100%;background:#fff
+      linear-gradient(90deg, rgba(255,255,255,.9) 0, rgba(255,255,255,.5) 80%),
+      linear-gradient(90deg, #22c55e, #06b6d4);
+    width:0%;
+  }
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:16px;margin-top:16px}
+  @media (max-width:960px){ .layout{grid-template-columns:1fr} }
+
+  /* Left panel (controls) */
+  .panel{
+    background:var(--card);border:2px solid var(--border);border-radius:16px;padding:16px
+  }
+  .section + .section{margin-top:16px;padding-top:16px;border-top:2px dashed var(--border)}
+  .section h3{font-size:20px}
+  label{display:block;margin:.5rem 0 .25rem .25rem;font-weight:700}
+  input[type="text"], input[type="number"], select, textarea{
+    width:100%;padding:12px 14px;border-radius:12px;border:2px solid var(--border);
+    font-size:18px;background:#fff;outline:none;
+  }
+  textarea{min-height:78px;resize:vertical}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 16px;border-radius:12px;border:0;cursor:pointer;
+    font-weight:900;font-size:18px;transition:transform .05s ease;user-select:none;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-secondary{background:var(--secondary);color:#fff}
+  .btn-accent{background:var(--accent);color:#222}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-ghost{background:#eef2ff;color:#312e81}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    background:#eef2ff;border:2px solid #c7d2fe;color:#312e81;padding:8px 12px;border-radius:9999px;cursor:pointer;font-weight:700
+  }
+  .chip.active{background:#a78bfa;border-color:#7c3aed;color:#fff}
+  .small{font-size:14px;color:var(--muted)}
+  .space{height:8px}
+
+  /* Student grid */
+  .student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:2px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;
+  }
+  .card-header{display:flex;align-items:center;justify-content:space-between}
+  .student-name{font-size:22px;font-weight:900}
+  .points{font-size:28px;font-weight:900;color:var(--primary)}
+  .progress{height:12px;background:#f1f5f9;border-radius:9999px;overflow:hidden;border:1px solid var(--border)}
+  .progress > div{height:100%;background:linear-gradient(90deg, #f59e0b, #ef4444);width:0%}
+  .quick{display:flex;gap:8px}
+  .quick .btn{flex:1}
+
+  .history{background:#f8fafc;border:2px dashed var(--border);border-radius:12px;padding:10px;max-height:140px;overflow:auto}
+  .history-item{font-size:14px;margin-bottom:6px}
+  .history-item b{color:#111}
+
+  .empty{padding:20px;border:2px dashed var(--border);border-radius:12px;text-align:center;color:var(--muted)}
+  .tools .btn{width:100%}
+
+  /* Overlay for celebrations */
+  .celebrate{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000;
+    background:rgba(0,0,0,.35);backdrop-filter:blur(2px)
+  }
+  .celebrate.show{display:flex}
+  .celebrate .box{
+    background:#fff;border-radius:18px;border:4px solid #fcd34d;max-width:560px;
+    padding:20px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  .celebrate .title{font-size:30px;font-weight:900;margin-bottom:8px}
+  .celebrate .msg{font-size:20px}
+  .confetti{
+    position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1001
+  }
+  .confetti span{
+    position:absolute;font-size:28px;animation:fall linear forwards;opacity:.95
+  }
+  @keyframes fall{
+    from{transform:translateY(-10vh) rotate(0deg)}
+    to{transform:translateY(110vh) rotate(540deg)}
+  }
+
+  .goal-item{
+    display:flex;align-items:center;gap:8px;background:#ecfeff;border:2px solid #a5f3fc;border-radius:12px;padding:10px
+  }
+  .goal-item input{flex:1}
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">🏆</div>
+        <div class="title">우리 반 칭찬 보상 프로그램</div>
+      </div>
+      <div class="class-stats">
+        <div class="stat-card">
+          <div class="stat-icon">💎</div>
+          <div class="stat-body">
+            <div class="stat-value"><span id="gemCount">0</span> 개</div>
+            <div class="stat-sub">학급 보석</div>
+            <div class="space"></div>
+            <div class="gem-progress"><div id="gemProgress"></div></div>
+            <div class="small">다음 보석까지 <b id="toNextGem">10</b>점</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🧮</div>
+          <div class="stat-body">
+            <div class="stat-value"><span id="studentCount">0</span> 명</div>
+            <div class="stat-sub">학생 수</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT PANEL -->
+      <div class="panel">
+        <div class="section">
+          <h3>학생 추가</h3>
+          <label>이름 (쉼표로 여러 명 추가)</label>
+          <input id="addNames" type="text" placeholder="예: 김칭찬, 이칭찬, 박칭찬"/>
+          <div class="row" style="margin-top:8px">
+            <button class="btn btn-secondary" id="btnAddStudents">+ 학생 추가</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>점수 부여</h3>
+          <label>학생 선택</label>
+          <select id="selStudent"></select>
+          <label>행동 메모</label>
+          <input id="inpBehavior" type="text" placeholder="예: 숙제를 성실히 잘했어요"/>
+          <label>점수</label>
+          <input id="inpPoints" type="number" min="1" step="1" value="3"/>
+          <div class="row" style="margin-top:10px">
+            <button class="btn btn-primary" id="btnGive">✅ 점수 주기</button>
+            <button class="btn btn-ghost" id="btnPlus1">+1</button>
+            <button class="btn btn-ghost" id="btnPlus3">+3</button>
+            <button class="btn btn-ghost" id="btnPlus5">+5</button>
+          </div>
+
+          <div class="space"></div>
+          <div class="small">※ 빠르게 사용하려면 아래 행동 템플릿을 만들어 두세요.</div>
+          <div class="chips" id="templateChips"></div>
+          <div class="row" style="margin-top:8px">
+            <input id="inpNewTemplate" type="text" placeholder="새 템플릿 예: 발표를 또박또박 했어요"/>
+            <button class="btn btn-accent" id="btnAddTemplate">+ 템플릿 추가</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>보석 목표 (50, 100, 150개…)</h3>
+          <div id="goalList" class="column" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn btn-ghost" id="btnAddGoal">+ 다음 구간 목표 추가</button>
+          </div>
+        </div>
+
+        <div class="section tools">
+          <h3>설정 / 관리</h3>
+          <button class="btn btn-ghost" id="btnExport">📤 데이터 내보내기</button>
+          <input id="fileImport" type="file" accept="application/json" style="display:none"/>
+          <button class="btn btn-ghost" id="btnImport">📥 데이터 가져오기</button>
+          <button class="btn btn-danger" id="btnReset">♻️ 전체 초기화</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: STUDENTS -->
+      <div class="panel">
+        <div class="section">
+          <h3>학생 목록</h3>
+          <div id="studentGrid" class="student-grid"></div>
+          <div id="emptyStudents" class="empty" style="display:none">학생을 먼저 추가해 주세요.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Celebration Overlay -->
+  <div id="celebrate" class="celebrate" role="dialog" aria-live="polite">
+    <div class="box">
+      <div class="title">🎉 축하합니다!</div>
+      <div id="celebrateMsg" class="msg"></div>
+      <div class="space"></div>
+      <button id="btnCloseCelebrate" class="btn btn-primary">닫기</button>
+    </div>
+  </div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
+<script>
+/** =========================
+ *  상태 관리 (localStorage)
+ *  ========================= */
+const STORE_KEY = 'classRewardState_v1';
+
+const defaultState = {
+  students: [], // {id, name, points, history:[{t, behavior, points}]}
+  class: {
+    gems: 0,
+    unbankedPoints: 0, // 0~9: 다음 보석까지 남은 합계
+    goals: {} // { "50": "과자 파티", "100": "파자마 파티" }
+  },
+  templates: ["숙제를 성실히 잘했어요", "발표를 또박또박 큰 목소리로 했어요", "친구를 도와줬어요"]
+};
+
+let state = loadState();
+
+function saveState(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return structuredClone(defaultState);
+    const parsed = JSON.parse(raw);
+    // 마이그레이션/기본값 보정
+    if(!parsed.class) parsed.class = {gems:0, unbankedPoints:0, goals:{}};
+    if(!parsed.templates) parsed.templates = defaultState.templates;
+    parsed.students = (parsed.students||[]).map(s=>({
+      id: s.id ?? crypto.randomUUID(),
+      name: s.name ?? '이름',
+      points: Number(s.points||0),
+      history: Array.isArray(s.history) ? s.history : []
+    }));
+    return parsed;
+  }catch(e){
+    console.warn('Failed to load state, using default.', e);
+    return structuredClone(defaultState);
+  }
+}
+
+/** =========================
+ *  유틸
+ *  ========================= */
+function fmtDate(ts){
+  const d = new Date(ts);
+  const m = d.getMonth()+1, day = d.getDate();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${m}/${day} ${hh}:${mm}`;
+}
+function nextMultiple(base, step){
+  return Math.ceil((base+1)/step)*step;
+}
+
+/** =========================
+ *  오디오(팡파레)
+ *  ========================= */
+let audioCtx;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+}
+function playFanfare(){
+  ensureAudio();
+  const ctx = audioCtx;
+  const seq = [
+    {t:0.00, f:523.25, d:0.20}, // C5
+    {t:0.22, f:659.25, d:0.20}, // E5
+    {t:0.44, f:783.99, d:0.20}, // G5
+    {t:0.68, f:1046.50, d:0.35}, // C6
+  ];
+  seq.forEach(n=>{
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = n.f;
+    o.connect(g); g.connect(ctx.destination);
+    const now = ctx.currentTime + n.t;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.4, now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + n.d);
+    o.start(now); o.stop(now + n.d + 0.02);
+  });
+}
+
+/** =========================
+ *  컨페티 & 축하
+ *  ========================= */
+const $cele = document.getElementById('celebrate');
+const $celeMsg = document.getElementById('celebrateMsg');
+const $confetti = document.getElementById('confetti');
+document.getElementById('btnCloseCelebrate').onclick = ()=> $cele.classList.remove('show');
+
+function launchConfetti(message="축하합니다!"){
+  $celeMsg.textContent = message;
+  $cele.classList.add('show');
+  $confetti.innerHTML = '';
+  const colors = ['🎉','🎊','💥','✨','💫','🌟','💎','🎈'];
+  const count = 80;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('span');
+    s.textContent = colors[Math.floor(Math.random()*colors.length)];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.animationDuration = (2 + Math.random()*2) + 's';
+    s.style.animationDelay = (Math.random()*0.5) + 's';
+    $confetti.appendChild(s);
+  }
+  playFanfare();
+  // 자동 닫기(사용성): 3.5초 후 컨페티 삭제, 오버레이 유지(닫기 버튼)
+  setTimeout(()=>{ $confetti.innerHTML=''; }, 3500);
+}
+
+/** =========================
+ *  보석/점수 로직
+ *  ========================= */
+function addPoints(studentId, deltaPoints, behaviorNote){
+  if(deltaPoints <= 0) return; // 본 앱은 가감 대신 '가산' 중심
+
+  const s = state.students.find(s=>s.id === studentId);
+  if(!s) return;
+
+  const prev = s.points;
+  s.points += deltaPoints;
+  s.history.unshift({t:Date.now(), behavior:behaviorNote||'칭찬 포인트', points:deltaPoints});
+  // 학생 개인 50점 단위 축하 체크
+  triggerStudentMilestones(s.name, prev, s.points);
+
+  // 학급: 개별 점수 합 10점당 보석 1개
+  let carry = state.class.unbankedPoints + deltaPoints;
+  const addGems = Math.floor(carry / 10);
+  state.class.unbankedPoints = carry % 10;
+  const prevGems = state.class.gems;
+  state.class.gems += addGems;
+  // 보석 50개 단위 목표 체크
+  if(addGems > 0){
+    triggerGemMilestones(prevGems, state.class.gems);
+  }
+
+  saveState();
+  render();
+}
+
+function triggerStudentMilestones(name, oldPts, newPts){
+  const startK = Math.floor(oldPts/50)+1;
+  const endK = Math.floor(newPts/50);
+  for(let k=startK; k<=endK; k++){
+    const milestone = 50*k;
+    launchConfetti(`🎉 ${name} 학생의 점수가 ${milestone}점이 되었어요! 대단해요!`);
+  }
+}
+
+function triggerGemMilestones(oldGems, newGems){
+  const startK = Math.floor(oldGems/50)+1;
+  const endK = Math.floor(newGems/50);
+  for(let k=startK; k<=endK; k++){
+    const milestone = 50*k;
+    const goalText = state.class.goals[milestone] || '';
+    launchConfetti(`💎 보석이 ${milestone}개가 되었어요! ${goalText ? '목표: ' + goalText : '새로운 목표를 정해볼까요?'}`);
+    // 목표가 없다면 즉시 입력 안내
+    if(!goalText){
+      setTimeout(()=> {
+        const t = prompt(`보석 ${milestone}개 달성 목표를 입력하세요 (예: 과자 파티 하기)`, '');
+        if(t && t.trim()){
+          state.class.goals[milestone] = t.trim();
+          saveState(); renderGoals();
+        }
+      }, 400);
+    }
+  }
+}
+
+/** =========================
+ *  렌더링
+ *  ========================= */
+const $selStudent = document.getElementById('selStudent');
+const $studentGrid = document.getElementById('studentGrid');
+const $emptyStudents = document.getElementById('emptyStudents');
+const $gemCount = document.getElementById('gemCount');
+const $toNextGem = document.getElementById('toNextGem');
+const $gemProgress = document.getElementById('gemProgress');
+const $studentCount = document.getElementById('studentCount');
+
+function render(){
+  renderHeader();
+  renderStudentSelector();
+  renderStudents();
+  renderTemplates();
+  renderGoals();
+}
+
+function renderHeader(){
+  $gemCount.textContent = state.class.gems;
+  $studentCount.textContent = state.students.length;
+  const left = 10 - (state.class.unbankedPoints || 0);
+  $toNextGem.textContent = left;
+  $gemProgress.style.width = ((state.class.unbankedPoints||0) / 10 * 100) + '%';
+}
+
+function renderStudentSelector(){
+  $selStudent.innerHTML = '';
+  if(state.students.length === 0){
+    const op = document.createElement('option');
+    op.textContent = '학생을 먼저 추가하세요';
+    op.value = '';
+    $selStudent.appendChild(op);
+  }else{
+    state.students.forEach(s=>{
+      const op = document.createElement('option');
+      op.value = s.id;
+      op.textContent = s.name;
+      $selStudent.appendChild(op);
+    });
+  }
+}
+
+function renderStudents(){
+  $studentGrid.innerHTML = '';
+  if(state.students.length === 0){
+    $emptyStudents.style.display = '';
+    return;
+  }
+  $emptyStudents.style.display = 'none';
+
+  state.students.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const head = document.createElement('div');
+    head.className = 'card-header';
+    const nm = document.createElement('div');
+    nm.className = 'student-name';
+    nm.textContent = s.name;
+    const pts = document.createElement('div');
+    pts.className = 'points';
+    pts.textContent = s.points + ' 점';
+    head.appendChild(nm); head.appendChild(pts);
+
+    const toNext = 50 - (s.points % 50 || 50);
+    const prog = document.createElement('div');
+    prog.className = 'progress';
+    const bar = document.createElement('div');
+    bar.style.width = ((s.points % 50)/50*100) + '%';
+    prog.appendChild(bar);
+
+    const quick = document.createElement('div');
+    quick.className = 'quick';
+    const b1 = mkBtn('+1', ()=> quickGive(s.id, 1));
+    const b3 = mkBtn('+3', ()=> quickGive(s.id, 3));
+    const b5 = mkBtn('+5', ()=> quickGive(s.id, 5));
+    b1.classList.add('btn-ghost'); b3.classList.add('btn-ghost'); b5.classList.add('btn-ghost');
+    quick.appendChild(b1); quick.appendChild(b3); quick.appendChild(b5);
+
+    const smallInfo = document.createElement('div');
+    smallInfo.className = 'small';
+    smallInfo.textContent = `다음 축하까지 ${toNext}점`;
+
+    const hist = document.createElement('div');
+    hist.className = 'history';
+    if(s.history.length===0){
+      hist.innerHTML = '<div class="small">아직 기록이 없어요.</div>';
+    }else{
+      s.history.slice(0, 8).forEach(h=>{
+        const it = document.createElement('div');
+        it.className = 'history-item';
+        it.innerHTML = `<b>+${h.points}점</b> · ${h.behavior} <span class="small">(${fmtDate(h.t)})</span>`;
+        hist.appendChild(it);
+      });
+    }
+
+    // 삭제 버튼
+    const actions = document.createElement('div');
+    actions.className = 'row';
+    const del = document.createElement('button');
+    del.className = 'btn btn-danger';
+    del.textContent = '삭제';
+    del.onclick = ()=>{
+      if(confirm(`"${s.name}" 학생을 삭제할까요? (점수/기록도 삭제됩니다)`)){
+        state.students = state.students.filter(x=>x.id!==s.id);
+        saveState(); render();
+      }
+    };
+    actions.appendChild(del);
+
+    card.appendChild(head);
+    card.appendChild(prog);
+    card.appendChild(smallInfo);
+    card.appendChild(quick);
+    card.appendChild(hist);
+    card.appendChild(actions);
+
+    $studentGrid.appendChild(card);
+  });
+
+  function mkBtn(text, onClick){
+    const b = document.createElement('button');
+    b.className = 'btn';
+    b.textContent = text;
+    b.onclick = onClick;
+    return b;
+  }
+}
+
+function renderTemplates(){
+  const wrap = document.getElementById('templateChips');
+  wrap.innerHTML = '';
+  const current = document.getElementById('inpBehavior').value.trim();
+  state.templates.forEach((t, idx)=>{
+    const span = document.createElement('span');
+    span.className = 'chip' + (t===current ? ' active':'');
+    span.textContent = t;
+    span.onclick = ()=>{
+      document.getElementById('inpBehavior').value = t;
+      renderTemplates();
+    }
+    // 우클릭으로 삭제
+    span.oncontextmenu = (e)=>{
+      e.preventDefault();
+      if(confirm(`"${t}" 템플릿을 삭제할까요?`)){
+        state.templates.splice(idx,1);
+        saveState(); renderTemplates();
+      }
+    }
+    wrap.appendChild(span);
+  });
+}
+
+function renderGoals(){
+  const list = document.getElementById('goalList');
+  list.innerHTML = '';
+  // 정렬된 키
+  const keys = Object.keys(state.class.goals).map(k=>Number(k)).sort((a,b)=>a-b);
+  keys.forEach(k=>{
+    const row = document.createElement('div');
+    row.className = 'goal-item';
+    const tag = document.createElement('div');
+    tag.style.fontWeight='900';
+    tag.style.minWidth='90px';
+    tag.textContent = `💎 ${k}개`;
+    const inp = document.createElement('input');
+    inp.type='text';
+    inp.value = state.class.goals[k] || '';
+    inp.placeholder = `보석 ${k}개 달성 목표`;
+    inp.onchange = ()=> { state.class.goals[k] = inp.value; saveState(); }
+    const del = document.createElement('button');
+    del.className = 'btn btn-danger'; del.textContent = '삭제';
+    del.onclick = ()=>{
+      if(confirm(`보석 ${k}개 목표를 삭제할까요?`)){
+        delete state.class.goals[k]; saveState(); renderGoals();
+      }
+    }
+    row.appendChild(tag); row.appendChild(inp); row.appendChild(del);
+    list.appendChild(row);
+  });
+
+  // 다음 구간 안내
+  const next = Math.ceil((state.class.gems+1)/50)*50;
+  const hint = document.createElement('div');
+  hint.className = 'small';
+  hint.style.marginTop='6px';
+  hint.textContent = `다음 목표 구간: 보석 ${next}개`;
+  list.appendChild(hint);
+}
+
+/** =========================
+ *  이벤트 바인딩
+ *  ========================= */
+document.getElementById('btnAddStudents').onclick = ()=>{
+  const raw = document.getElementById('addNames').value.trim();
+  if(!raw) return;
+  const names = raw.split(',').map(s=>s.trim()).filter(Boolean);
+  names.forEach(n=>{
+    state.students.push({id:crypto.randomUUID(), name:n, points:0, history:[]});
+  });
+  document.getElementById('addNames').value = '';
+  saveState(); render();
+};
+
+document.getElementById('btnGive').onclick = ()=>{
+  const id = $selStudent.value;
+  if(!id){ alert('학생을 선택해주세요.'); return; }
+  const behavior = document.getElementById('inpBehavior').value.trim() || '칭찬 포인트';
+  const pts = Number(document.getElementById('inpPoints').value);
+  if(!Number.isFinite(pts) || pts<=0){ alert('점수를 1 이상으로 입력하세요.'); return; }
+  addPoints(id, pts, behavior);
+};
+
+document.getElementById('btnPlus1').onclick = ()=> quickToolbarGive(1);
+document.getElementById('btnPlus3').onclick = ()=> quickToolbarGive(3);
+document.getElementById('btnPlus5').onclick = ()=> quickToolbarGive(5);
+
+function quickToolbarGive(delta){
+  const id = $selStudent.value;
+  if(!id){ alert('학생을 선택해주세요.'); return; }
+  const behavior = document.getElementById('inpBehavior').value.trim() || `빠른 점수 +${delta}`;
+  addPoints(id, delta, behavior);
+}
+
+function quickGive(studentId, delta){
+  // 현재 선택된 템플릿/메모 가져오기
+  const behavior = document.getElementById('inpBehavior').value.trim() || `빠른 점수 +${delta}`;
+  addPoints(studentId, delta, behavior);
+}
+
+document.getElementById('btnAddTemplate').onclick = ()=>{
+  const t = document.getElementById('inpNewTemplate').value.trim();
+  if(!t) return;
+  if(!state.templates.includes(t)) state.templates.push(t);
+  document.getElementById('inpNewTemplate').value='';
+  saveState(); renderTemplates();
+};
+
+document.getElementById('btnAddGoal').onclick = ()=>{
+  const next = Math.ceil((state.class.gems+1)/50)*50;
+  const t = prompt(`보석 ${next}개 달성 목표를 입력하세요`, state.class.goals[next]||'');
+  if(t && t.trim()){
+    state.class.goals[next] = t.trim();
+    saveState(); renderGoals();
+  }
+};
+
+document.getElementById('btnExport').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'class-reward-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('btnImport').onclick = ()=>{
+  document.getElementById('fileImport').click();
+};
+document.getElementById('fileImport').onchange = (e)=>{
+  const file = e.target.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!confirm('가져오신 데이터로 덮어쓸까요? 현재 데이터는 사라집니다.')) return;
+      localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      state = loadState(); render();
+    }catch(err){
+      alert('가져오기 실패: 올바른 JSON 파일이 아닙니다.');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+  e.target.value = '';
+};
+
+document.getElementById('btnReset').onclick = ()=>{
+  if(confirm('전체 데이터를 초기화할까요? (되돌릴 수 없습니다)')){
+    localStorage.removeItem(STORE_KEY);
+    state = structuredClone(defaultState);
+    render();
+  }
+};
+
+/** =========================
+ *  초기 렌더
+ *  ========================= */
+render();
+</script>
+</body>
+</html>
